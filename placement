@@ -1,0 +1,24 @@
+void Optimizer::savePlacement2Txt(const std::string& outputFilePath) {
+        double regionWidth = placeRegionUR.x - placeRegionLL.x;
+        double regionHeight = placeRegionUR.y - placeRegionLL.y;
+
+        std::ofstream outFile(outputFilePath);
+
+        if (outFile.is_open()) {
+            for (auto &module : modules) {
+                double relativeX = (module->coordinate.x - placeRegionLL.x) / regionWidth;
+                double relativeY = (module->coordinate.y - placeRegionLL.y) / regionHeight;
+                double scaledWidth = module->width / regionWidth;
+                double scaledHeight = module->height / regionHeight;
+
+                outFile << "Module idx: " << module->idx << "\n";
+                outFile << "Relative Position: (" << relativeX << ", " << relativeY << ")\n";
+                outFile << "Is Filler: " << (module->isFiller ? "1" : "0") << "\n";
+                outFile << "Width: " << scaledWidth << "\n";
+                outFile << "Height: " << scaledHeight << "\n\n";
+            }
+            outFile.close();
+        } else {
+            std::cerr << "Unable to open file";
+        }
+    }
