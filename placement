@@ -1,24 +1,39 @@
 void Optimizer::savePlacement2Txt(const std::string& outputFilePath) {
-        double regionWidth = placeRegionUR.x - placeRegionLL.x;
-        double regionHeight = placeRegionUR.y - placeRegionLL.y;
-
-        std::ofstream outFile(outputFilePath);
-
-        if (outFile.is_open()) {
-            for (auto &module : modules) {
-                double relativeX = (module->coordinate.x - placeRegionLL.x) / regionWidth;
-                double relativeY = (module->coordinate.y - placeRegionLL.y) / regionHeight;
-                double scaledWidth = module->width / regionWidth;
-                double scaledHeight = module->height / regionHeight;
-
-                outFile << "Module idx: " << module->idx << "\n";
-                outFile << "Relative Position: (" << relativeX << ", " << relativeY << ")\n";
-                outFile << "Is Filler: " << (module->isFiller ? "1" : "0") << "\n";
-                outFile << "Width: " << scaledWidth << "\n";
-                outFile << "Height: " << scaledHeight << "\n\n";
+    double regionWidth = placeRegionUR.x - placeRegionLL.x;
+    double regionHeight = placeRegionUR.y - placeRegionLL.y;
+    
+    //if file already exist, delete it
+    std::remove(outputFilePath.c_str());
+    std::ofstream outFile(outputFilePath);
+    
+    if (outFile.is_open()) {
+        for (auto &module : modules) {
+            double relativeX = (module->coordinate.x - placeRegionLL.x) / regionWidth;
+            double relativeY = (module->coordinate.y - placeRegionLL.y) / regionHeight;
+            double scaledWidth = module->width / regionWidth;
+            double scaledHeight = module->height / regionHeight;
+            vector<int> related_nets;
+            related_nets.clear();
+            for (auto &pin: module->pins) {
+                related_nets.emplace_back(pin->net->idx);
             }
-            outFile.close();
-        } else {
-            std::cerr << "Unable to open file";
+    
+            outFile << "Module idx: " << module->idx << "\n";
+            outFile << "Relative Position: (" << relativeX << ", " << relativeY << ")\n";
+            outFile << "Is Filler: " << (module->isFiller ? "1" : "0") << "\n";
+            outFile << "Width: " << scaledWidth << "\n";
+            outFile << "Height: " << scaledHeight << "\n";
+            outFile << "Related Nets: ";
+            for (size_t i = 0; i < related_nets.size(); ++i) {
+                outFile << related_nets[i];
+                if (i != related_nets.size() - 1) {
+                    outFile << ", ";
+                }
+            }
+            outFile << "\n\n";
         }
+        outFile.close();
+    } else {
+        std::cerr << "Unable to open file";
     }
+}
